@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../server";
 import { hashPassword, comparePasswords, generateToken } from "../utils/auth";
 import { authMiddleware, AuthRequest } from "../middleware/auth";
+import { ResponseHelper } from "../utils/response";
+import { ErrorLogger, ErrorSeverity } from "../utils/logger";
 
 const router = Router();
 
@@ -18,23 +20,25 @@ router.post("/register", async (req: Request, res: Response) => {
 
     // Validation
     if (!name || !email || !password || !role) {
-      return res
-        .status(400)
-        .json({ error: "name, email, password, and role are required" });
+      return ResponseHelper.badRequest(
+        res,
+        "name, email, password, and role are required"
+      );
     }
 
     if (!validateEmail(email)) {
-      return res.status(400).json({ error: "Invalid email format" });
+      return ResponseHelper.badRequest(res, "Invalid email format");
     }
 
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ error: "Password must be at least 6 characters" });
+    if (password.length < 8) {
+      return ResponseHelper.badRequest(
+        res,
+        "Password must be at least 8 characters"
+      );
     }
 
     if (!["STUDENT", "TUTOR", "ADMIN"].includes(role)) {
-      return res.status(400).json({ error: "Invalid role" });
+      return ResponseHelper.badRequest(res, "Invalid role");
     }
 
     // Check if user exists
@@ -43,7 +47,7 @@ router.post("/register", async (req: Request, res: Response) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ error: "User already exists" });
+      return ResponseHelper.conflict(res, "User already exists");
     }
 
     // Hash password
@@ -76,8 +80,7 @@ router.post("/register", async (req: Request, res: Response) => {
       role: user.role,
     });
 
-    res.status(201).json({
-      message: "User registered successfully",
+    return ResponseHelper.created(res, {
       user: {
         id: user.id,
         name: user.name,
@@ -85,10 +88,13 @@ router.post("/register", async (req: Request, res: Response) => {
         role: user.role,
       },
       token,
-    });
+    }, "User registered successfully");
   } catch (error: any) {
-    console.error("Register error:", error);
-    res.status(500).json({ error: "Failed to register user" });
+    ErrorLogger.log(error, "Register endpoint", ErrorSeverity.HIGH);
+    if (ErrorLogger.isDatabaseError(error)) {
+      return ResponseHelper.internalError(res, ErrorLogger.handleValidationError(error));
+    }
+    return ResponseHelper.internalError(res, "Failed to register user");
   }
 });
 
@@ -99,7 +105,10 @@ router.post("/login", async (req: Request, res: Response) => {
 
     // Validation
     if (!email || !password) {
-      return res.status(400).json({ error: "email and password are required" });
+      return ResponseHelper.badRequest(
+        res,
+        "Email and password are required"
+      );
     }
 
     // Find user
@@ -111,19 +120,19 @@ router.post("/login", async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return ResponseHelper.unauthorized(res, "Invalid email or password");
     }
 
     // Check if user is active
     if (!user.isActive) {
-      return res.status(403).json({ error: "Your account has been disabled" });
+      return ResponseHelper.forbidden(res, "Your account has been disabled");
     }
 
     // Compare passwords
     const isPasswordValid = await comparePasswords(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return ResponseHelper.unauthorized(res, "Invalid email or password");
     }
 
     // Generate token
@@ -133,8 +142,7 @@ router.post("/login", async (req: Request, res: Response) => {
       role: user.role,
     });
 
-    res.json({
-      message: "Login successful",
+    return ResponseHelper.success(res, {
       user: {
         id: user.id,
         name: user.name,
@@ -143,10 +151,10 @@ router.post("/login", async (req: Request, res: Response) => {
         tutorProfile: user.tutorProfile,
       },
       token,
-    });
+    }, 200, "Login successful");
   } catch (error: any) {
-    console.error("Login error:", error);
-    res.status(500).json({ error: "Failed to login" });
+    ErrorLogger.log(error, "Login endpoint", ErrorSeverity.MEDIUM);
+    return ResponseHelper.internalError(res, "Failed to login");
   }
 });
 
@@ -154,7 +162,7 @@ router.post("/login", async (req: Request, res: Response) => {
 router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return ResponseHelper.unauthorized(res, "Unauthorized");
     }
 
     const user = await prisma.user.findUnique({
@@ -165,10 +173,10 @@ router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return ResponseHelper.notFound(res, "User not found");
     }
 
-    res.json({
+    return ResponseHelper.success(res, {
       user: {
         id: user.id,
         name: user.name,
@@ -180,8 +188,8 @@ router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error("Get user error:", error);
-    res.status(500).json({ error: "Failed to get user" });
+    ErrorLogger.log(error, "Get current user endpoint", ErrorSeverity.MEDIUM);
+    return ResponseHelper.internalError(res, "Failed to get user");
   }
 });
 
