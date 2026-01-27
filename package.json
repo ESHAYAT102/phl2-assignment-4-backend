@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@prisma/client": "^7.3.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
