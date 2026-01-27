@@ -98,7 +98,8 @@ export const HTTP_STATUS = {
 export const ERROR_MESSAGES = {
   INVALID_CREDENTIALS: "Invalid email or password",
   INVALID_EMAIL: "Invalid email format",
-  PASSWORD_TOO_WEAK: "Password must be at least 8 characters with uppercase, lowercase, and numbers",
+  PASSWORD_TOO_WEAK:
+    "Password must be at least 8 characters with uppercase, lowercase, and numbers",
   USER_NOT_FOUND: "User not found",
   USER_ALREADY_EXISTS: "User already exists",
   UNAUTHORIZED: "Unauthorized access",

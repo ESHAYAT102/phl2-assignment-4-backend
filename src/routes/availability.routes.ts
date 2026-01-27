@@ -60,7 +60,10 @@ router.post(
       if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
         return res
           .status(400)
-          .json({ error: "dayOfWeek must be an integer between 0 (Sunday) and 6 (Saturday)" });
+          .json({
+            error:
+              "dayOfWeek must be an integer between 0 (Sunday) and 6 (Saturday)",
+          });
       }
 
       // Validate time format (HH:MM)
@@ -86,8 +89,7 @@ router.post(
       }
 
       // Validate slot duration (at least 30 minutes)
-      const durationMinutes =
-        (end.getTime() - start.getTime()) / (1000 * 60);
+      const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
       if (durationMinutes < 30) {
         return res.status(400).json({
           error: "Availability slot must be at least 30 minutes",

@@ -3,7 +3,6 @@
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -24,7 +23,6 @@ model User {
   // Relations
   tutorProfile  TutorProfile?
   bookingsAsStudent TutorBooking[] @relation("StudentBookings")
-  bookingsAsTutor   TutorBooking[] @relation("TutorBookings")
   reviews       Review[]
 }
 

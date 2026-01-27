@@ -171,7 +171,9 @@ router.put(
         data: {
           name: name ? name.trim() : category.name,
           description:
-            description !== undefined ? description.trim() || null : category.description,
+            description !== undefined
+              ? description.trim() || null
+              : category.description,
         },
       });
 

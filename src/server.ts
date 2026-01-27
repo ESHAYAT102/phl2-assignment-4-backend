@@ -1,11 +1,13 @@
-import express, { Express, Request, Response, NextFunction } from "express";
+import express from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { PrismaClient } from "@prisma/client";
 
 // Load environment variables
 dotenv.config({ path: ".env.local" });
 dotenv.config({ path: ".env" });
+
+import { PrismaClient } from "@prisma/client";
 
 const app: Express = express();
 const prisma = new PrismaClient();

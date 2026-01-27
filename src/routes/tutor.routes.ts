@@ -148,7 +148,11 @@ router.put(
 
       // Validate hourlyRate
       if (hourlyRate !== undefined) {
-        if (typeof hourlyRate !== "number" || hourlyRate < 0 || hourlyRate > 10000) {
+        if (
+          typeof hourlyRate !== "number" ||
+          hourlyRate < 0 ||
+          hourlyRate > 10000
+        ) {
           return res.status(400).json({
             error: "Hourly rate must be a number between 0 and 10000",
           });
@@ -188,7 +192,11 @@ router.put(
 
       // Validate experience
       if (experience !== undefined) {
-        if (!Number.isInteger(experience) || experience < 0 || experience > 100) {
+        if (
+          !Number.isInteger(experience) ||
+          experience < 0 ||
+          experience > 100
+        ) {
           return res.status(400).json({
             error: "Experience must be an integer between 0 and 100 years",
           });

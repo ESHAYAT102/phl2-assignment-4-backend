@@ -77,7 +77,11 @@ export class ResponseHelper {
     return res.status(statusCode).json(response);
   }
 
-  static created<T>(res: Response, data: T, message: string = "Created successfully") {
+  static created<T>(
+    res: Response,
+    data: T,
+    message: string = "Created successfully",
+  ) {
     return this.success(res, data, 201, message);
   }
 

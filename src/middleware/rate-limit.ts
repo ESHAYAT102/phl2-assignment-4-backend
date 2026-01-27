@@ -1,5 +1,5 @@
 // Rate limiting middleware for the backend
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { ResponseHelper } from "../utils/response";
 
 interface RateLimitStore {
@@ -46,9 +46,7 @@ export function rateLimit(options: RateLimitOptions = {}) {
 
     // Check if limit exceeded
     if (store[key].count > maxRequests) {
-      const retryAfter = Math.ceil(
-        (store[key].resetTime - now) / 1000,
-      );
+      const retryAfter = Math.ceil((store[key].resetTime - now) / 1000);
       res.set("Retry-After", retryAfter.toString());
       return ResponseHelper.error(
         res,
@@ -62,14 +60,17 @@ export function rateLimit(options: RateLimitOptions = {}) {
 }
 
 // Cleanup old entries periodically (every 5 minutes)
-setInterval(() => {
-  const now = Date.now();
-  for (const key in store) {
-    if (store[key].resetTime < now) {
-      delete store[key];
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const key in store) {
+      if (store[key] && store[key].resetTime < now) {
+        delete store[key];
+      }
     }
-  }
-}, 5 * 60 * 1000);
+  },
+  5 * 60 * 1000,
+);
 
 // Specialized rate limiters
 

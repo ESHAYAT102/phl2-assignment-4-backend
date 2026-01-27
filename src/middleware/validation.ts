@@ -1,5 +1,5 @@
 // Request validation middleware for the backend
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { ResponseHelper } from "../utils/response";
 
 export interface ValidationRule {
@@ -24,7 +24,10 @@ export function validateRequest(rules: ValidationRule) {
       const value = req.body[field];
 
       // Check required
-      if (rule.required && (value === undefined || value === null || value === "")) {
+      if (
+        rule.required &&
+        (value === undefined || value === null || value === "")
+      ) {
         errors[field] = `${field} is required`;
         continue;
       }
@@ -69,10 +72,12 @@ export function validateRequest(rules: ValidationRule) {
       // Check minLength/maxLength for strings
       if (rule.type === "string" && actualType === "string") {
         if (rule.minLength !== undefined && value.length < rule.minLength) {
-          errors[field] = `${field} must be at least ${rule.minLength} characters`;
+          errors[field] =
+            `${field} must be at least ${rule.minLength} characters`;
         }
         if (rule.maxLength !== undefined && value.length > rule.maxLength) {
-          errors[field] = `${field} must be at most ${rule.maxLength} characters`;
+          errors[field] =
+            `${field} must be at most ${rule.maxLength} characters`;
         }
       }
 
@@ -90,13 +95,14 @@ export function validateRequest(rules: ValidationRule) {
       if (rule.custom) {
         const result = rule.custom(value);
         if (result !== true) {
-          errors[field] = typeof result === "string" ? result : `${field} is invalid`;
+          errors[field] =
+            typeof result === "string" ? result : `${field} is invalid`;
         }
       }
     }
 
     if (Object.keys(errors).length > 0) {
-      return ResponseHelper.badRequest(res, "Validation failed", errors);
+      return ResponseHelper.badRequest(res, "Validation failed");
     }
 
     next();

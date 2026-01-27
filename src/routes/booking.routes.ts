@@ -76,17 +76,19 @@ router.post(
       if (!Number.isInteger(duration) || duration <= 0 || duration > 480) {
         return res
           .status(400)
-          .json({ error: "Duration must be an integer between 1 and 480 minutes" });
+          .json({
+            error: "Duration must be an integer between 1 and 480 minutes",
+          });
       }
 
       // Validate price
       if (typeof price !== "number" || price <= 0) {
-        return res.status(400).json({ error: "Price must be a positive number" });
-      }
-      if (price > 10000) {
         return res
           .status(400)
-          .json({ error: "Price cannot exceed 10000" });
+          .json({ error: "Price must be a positive number" });
+      }
+      if (price > 10000) {
+        return res.status(400).json({ error: "Price cannot exceed 10000" });
       }
 
       // Check if tutor exists

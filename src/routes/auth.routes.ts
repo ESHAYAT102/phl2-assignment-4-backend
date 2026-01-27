@@ -22,7 +22,7 @@ router.post("/register", async (req: Request, res: Response) => {
     if (!name || !email || !password || !role) {
       return ResponseHelper.badRequest(
         res,
-        "name, email, password, and role are required"
+        "name, email, password, and role are required",
       );
     }
 
@@ -33,7 +33,7 @@ router.post("/register", async (req: Request, res: Response) => {
     if (password.length < 8) {
       return ResponseHelper.badRequest(
         res,
-        "Password must be at least 8 characters"
+        "Password must be at least 8 characters",
       );
     }
 
@@ -80,19 +80,26 @@ router.post("/register", async (req: Request, res: Response) => {
       role: user.role,
     });
 
-    return ResponseHelper.created(res, {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+    return ResponseHelper.created(
+      res,
+      {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        token,
       },
-      token,
-    }, "User registered successfully");
+      "User registered successfully",
+    );
   } catch (error: any) {
     ErrorLogger.log(error, "Register endpoint", ErrorSeverity.HIGH);
     if (ErrorLogger.isDatabaseError(error)) {
-      return ResponseHelper.internalError(res, ErrorLogger.handleValidationError(error));
+      return ResponseHelper.internalError(
+        res,
+        ErrorLogger.handleValidationError(error),
+      );
     }
     return ResponseHelper.internalError(res, "Failed to register user");
   }
@@ -105,10 +112,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
     // Validation
     if (!email || !password) {
-      return ResponseHelper.badRequest(
-        res,
-        "Email and password are required"
-      );
+      return ResponseHelper.badRequest(res, "Email and password are required");
     }
 
     // Find user
@@ -142,16 +146,21 @@ router.post("/login", async (req: Request, res: Response) => {
       role: user.role,
     });
 
-    return ResponseHelper.success(res, {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        tutorProfile: user.tutorProfile,
+    return ResponseHelper.success(
+      res,
+      {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          tutorProfile: user.tutorProfile,
+        },
+        token,
       },
-      token,
-    }, 200, "Login successful");
+      200,
+      "Login successful",
+    );
   } catch (error: any) {
     ErrorLogger.log(error, "Login endpoint", ErrorSeverity.MEDIUM);
     return ResponseHelper.internalError(res, "Failed to login");

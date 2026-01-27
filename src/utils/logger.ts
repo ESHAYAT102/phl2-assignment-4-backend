@@ -17,9 +17,7 @@ export class ErrorLogger {
     const timestamp = new Date().toISOString();
     const message = error?.message || JSON.stringify(error);
 
-    console.log(
-      `[${timestamp}] [${severity}] [${context}] ${message}`,
-    );
+    console.log(`[${timestamp}] [${severity}] [${context}] ${message}`);
 
     // In production, you might want to send this to an error tracking service
     // like Sentry, LogRocket, etc.
@@ -58,7 +56,9 @@ export class ErrorLogger {
   }
 
   static isAuthError(error: any): boolean {
-    return error?.name === "JsonWebTokenError" || error?.name === "TokenExpiredError";
+    return (
+      error?.name === "JsonWebTokenError" || error?.name === "TokenExpiredError"
+    );
   }
 
   static isDatabaseError(error: any): boolean {

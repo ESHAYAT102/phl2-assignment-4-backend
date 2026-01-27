@@ -2,9 +2,14 @@
 import { CorsOptions } from "cors";
 
 export const corsOptions: CorsOptions = {
-  origin: process.env.NODE_ENV === "production"
-    ? process.env.FRONTEND_URL || "https://skillbridge.com"
-    : ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"],
+  origin:
+    process.env.NODE_ENV === "production"
+      ? process.env.FRONTEND_URL || "https://skillbridge.com"
+      : [
+          "http://localhost:3000",
+          "http://localhost:3001",
+          "http://127.0.0.1:3000",
+        ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -20,12 +25,8 @@ export const trustedOrigins = {
     "http://127.0.0.1:3000",
     "http://localhost:5000",
   ],
-  staging: [
-    process.env.STAGING_URL || "https://staging-skillbridge.com",
-  ],
-  production: [
-    process.env.FRONTEND_URL || "https://skillbridge.com",
-  ],
+  staging: [process.env.STAGING_URL || "https://staging-skillbridge.com"],
+  production: [process.env.FRONTEND_URL || "https://skillbridge.com"],
 };
 
 export const getCurrentTrustedOrigins = () => {
