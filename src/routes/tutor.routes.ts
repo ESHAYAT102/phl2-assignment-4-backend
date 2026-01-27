@@ -7,7 +7,13 @@ const router = Router();
 // Get all tutors (public)
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const { subject, minRating, maxPrice, page = "1", limit = "10" } = req.query;
+    const {
+      subject,
+      minRating,
+      maxPrice,
+      page = "1",
+      limit = "10",
+    } = req.query;
 
     const pageNum = Math.max(1, parseInt(page as string) || 1);
     const limitNum = Math.min(50, Math.max(1, parseInt(limit as string) || 10));
@@ -125,13 +131,8 @@ router.put(
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const {
-        bio,
-        hourlyRate,
-        subjects,
-        qualifications,
-        experience,
-      } = req.body;
+      const { bio, hourlyRate, subjects, qualifications, experience } =
+        req.body;
 
       // Validation
       if (hourlyRate !== undefined && (hourlyRate < 0 || hourlyRate > 10000)) {
@@ -180,7 +181,7 @@ router.put(
       console.error("Update tutor error:", error);
       res.status(500).json({ error: "Failed to update tutor profile" });
     }
-  }
+  },
 );
 
 // Get tutors bookings (tutor only)
@@ -224,7 +225,7 @@ router.get(
       console.error("Get tutor bookings error:", error);
       res.status(500).json({ error: "Failed to fetch bookings" });
     }
-  }
+  },
 );
 
 export default router;

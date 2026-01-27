@@ -51,7 +51,7 @@ router.get(
       console.error("Get dashboard error:", error);
       res.status(500).json({ error: "Failed to fetch dashboard data" });
     }
-  }
+  },
 );
 
 // Get all users (admin only)
@@ -64,7 +64,10 @@ router.get(
       const { role, isActive, page = "1", limit = "10", search } = req.query;
 
       const pageNum = Math.max(1, parseInt(page as string) || 1);
-      const limitNum = Math.min(50, Math.max(1, parseInt(limit as string) || 10));
+      const limitNum = Math.min(
+        50,
+        Math.max(1, parseInt(limit as string) || 10),
+      );
       const skip = (pageNum - 1) * limitNum;
 
       const where: any = {};
@@ -126,7 +129,7 @@ router.get(
       console.error("Get users error:", error);
       res.status(500).json({ error: "Failed to fetch users" });
     }
-  }
+  },
 );
 
 // Get single user
@@ -156,7 +159,7 @@ router.get(
       console.error("Get user error:", error);
       res.status(500).json({ error: "Failed to fetch user" });
     }
-  }
+  },
 );
 
 // Update user status (admin only)
@@ -197,7 +200,7 @@ router.patch(
       console.error("Update user error:", error);
       res.status(500).json({ error: "Failed to update user" });
     }
-  }
+  },
 );
 
 // Get all bookings (admin only)
@@ -210,12 +213,18 @@ router.get(
       const { status, page = "1", limit = "10" } = req.query;
 
       const pageNum = Math.max(1, parseInt(page as string) || 1);
-      const limitNum = Math.min(50, Math.max(1, parseInt(limit as string) || 10));
+      const limitNum = Math.min(
+        50,
+        Math.max(1, parseInt(limit as string) || 10),
+      );
       const skip = (pageNum - 1) * limitNum;
 
       const where: any = {};
 
-      if (status && ["CONFIRMED", "COMPLETED", "CANCELLED"].includes(status as string)) {
+      if (
+        status &&
+        ["CONFIRMED", "COMPLETED", "CANCELLED"].includes(status as string)
+      ) {
         where.status = status;
       }
 
@@ -261,7 +270,7 @@ router.get(
       console.error("Get bookings error:", error);
       res.status(500).json({ error: "Failed to fetch bookings" });
     }
-  }
+  },
 );
 
 // Delete user (admin only)
@@ -283,9 +292,7 @@ router.delete(
 
       // Prevent deleting admin accounts
       if (user.role === "ADMIN") {
-        return res
-          .status(400)
-          .json({ error: "Cannot delete admin accounts" });
+        return res.status(400).json({ error: "Cannot delete admin accounts" });
       }
 
       await prisma.user.delete({
@@ -297,7 +304,7 @@ router.delete(
       console.error("Delete user error:", error);
       res.status(500).json({ error: "Failed to delete user" });
     }
-  }
+  },
 );
 
 export default router;

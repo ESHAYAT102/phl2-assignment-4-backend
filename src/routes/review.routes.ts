@@ -47,11 +47,9 @@ router.post(
 
       // Check if booking is completed
       if (booking.status !== "COMPLETED") {
-        return res
-          .status(400)
-          .json({
-            error: "Can only review completed bookings",
-          });
+        return res.status(400).json({
+          error: "Can only review completed bookings",
+        });
       }
 
       // Check if review already exists
@@ -108,7 +106,7 @@ router.post(
       console.error("Create review error:", error);
       res.status(500).json({ error: "Failed to create review" });
     }
-  }
+  },
 );
 
 // Get reviews for a tutor
@@ -272,7 +270,7 @@ router.put(
       console.error("Update review error:", error);
       res.status(500).json({ error: "Failed to update review" });
     }
-  }
+  },
 );
 
 // Delete review (student only)
@@ -339,7 +337,7 @@ router.delete(
       console.error("Delete review error:", error);
       res.status(500).json({ error: "Failed to delete review" });
     }
-  }
+  },
 );
 
 export default router;

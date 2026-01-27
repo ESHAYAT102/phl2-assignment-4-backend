@@ -71,7 +71,7 @@ router.post(
       console.error("Create category error:", error);
       res.status(500).json({ error: "Failed to create category" });
     }
-  }
+  },
 );
 
 // Update category (admin only)
@@ -100,7 +100,9 @@ router.put(
         });
 
         if (existing) {
-          return res.status(400).json({ error: "Category name already exists" });
+          return res
+            .status(400)
+            .json({ error: "Category name already exists" });
         }
       }
 
@@ -108,7 +110,8 @@ router.put(
         where: { id },
         data: {
           name: name || category.name,
-          description: description !== undefined ? description : category.description,
+          description:
+            description !== undefined ? description : category.description,
         },
       });
 
@@ -120,7 +123,7 @@ router.put(
       console.error("Update category error:", error);
       res.status(500).json({ error: "Failed to update category" });
     }
-  }
+  },
 );
 
 // Delete category (admin only)
@@ -150,7 +153,7 @@ router.delete(
       console.error("Delete category error:", error);
       res.status(500).json({ error: "Failed to delete category" });
     }
-  }
+  },
 );
 
 export default router;

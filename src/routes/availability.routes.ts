@@ -33,7 +33,7 @@ router.get(
       console.error("Get availability error:", error);
       res.status(500).json({ error: "Failed to fetch availability" });
     }
-  }
+  },
 );
 
 // Add availability slot (tutor only)
@@ -87,7 +87,7 @@ router.post(
       console.error("Add availability error:", error);
       res.status(500).json({ error: "Failed to add availability" });
     }
-  }
+  },
 );
 
 // Delete availability slot (tutor only)
@@ -130,7 +130,7 @@ router.delete(
       console.error("Delete availability error:", error);
       res.status(500).json({ error: "Failed to delete availability" });
     }
-  }
+  },
 );
 
 export default router;

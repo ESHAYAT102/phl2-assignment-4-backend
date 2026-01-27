@@ -99,9 +99,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
     // Validation
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "email and password are required" });
+      return res.status(400).json({ error: "email and password are required" });
     }
 
     // Find user
