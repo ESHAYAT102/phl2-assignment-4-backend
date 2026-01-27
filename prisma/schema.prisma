@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  name      String
+  phone     String?
+  role      UserRole   @default(STUDENT)
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  tutorProfile  TutorProfile?
+  bookingsAsStudent TutorBooking[] @relation("StudentBookings")
+  bookingsAsTutor   TutorBooking[] @relation("TutorBookings")
+  reviews       Review[]
+}
+
+enum UserRole {
+  STUDENT
+  TUTOR
+  ADMIN
+}
+
+model TutorProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  bio           String?
+  hourlyRate    Float    @default(0)
+  rating        Float    @default(0)
+  totalReviews  Int      @default(0)
+  subjects      String[] @default([])
+  qualifications String?
+  experience    Int      @default(0)
+  isVerified    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availability  Availability[]
+  bookings      TutorBooking[]
+  reviews       Review[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  bookings  TutorBooking[]
+}
+
+model Availability {
+  id        String   @id @default(cuid())
+  tutorId   String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tutor     TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@unique([tutorId, dayOfWeek, startTime, endTime])
+}
+
+model TutorBooking {
+  id              String        @id @default(cuid())
+  studentId       String
+  tutorId         String
+  categoryId      String
+  subject         String
+  sessionDate     DateTime
+  duration        Int
+  status          BookingStatus @default(CONFIRMED)
+  notes           String?
+  paymentMethod   String        @default("CASH_ON_DELIVERY")
+  price           Float
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  student         User          @relation("StudentBookings", fields: [studentId], references: [id], onDelete: Cascade)
+  tutor           TutorProfile  @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  category        Category      @relation(fields: [categoryId], references: [id])
+  review          Review?
+}
+
+enum BookingStatus {
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  bookingId String   @unique
+  tutorId   String
+  studentId String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  booking   TutorBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  tutor     TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  student   User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
