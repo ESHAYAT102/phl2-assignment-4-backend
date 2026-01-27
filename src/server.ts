@@ -28,6 +28,7 @@ import bookingRoutes from "./routes/booking.routes";
 import reviewRoutes from "./routes/review.routes";
 import adminRoutes from "./routes/admin.routes";
 import categoryRoutes from "./routes/category.routes";
+import availabilityRoutes from "./routes/availability.routes";
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -36,6 +37,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/availability", availabilityRoutes);
 
 // Health check
 app.get("/api/health", (req: Request, res: Response) => {
