@@ -17,17 +17,40 @@ router.post(
 
       const { bookingId, rating, comment } = req.body;
 
-      // Validation
+      // Validation - required fields
       if (!bookingId || !rating) {
         return res.status(400).json({
           error: "bookingId and rating are required",
         });
       }
 
-      if (rating < 1 || rating > 5) {
+      // Validate bookingId
+      if (typeof bookingId !== "string" || bookingId.trim() === "") {
+        return res.status(400).json({ error: "Valid bookingId is required" });
+      }
+
+      // Validate rating
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
         return res
           .status(400)
-          .json({ error: "Rating must be between 1 and 5" });
+          .json({ error: "Rating must be an integer between 1 and 5" });
+      }
+
+      // Validate comment if provided
+      if (comment) {
+        if (typeof comment !== "string") {
+          return res.status(400).json({ error: "Comment must be a string" });
+        }
+        if (comment.trim().length === 0) {
+          return res
+            .status(400)
+            .json({ error: "Comment cannot be empty if provided" });
+        }
+        if (comment.length > 1000) {
+          return res
+            .status(400)
+            .json({ error: "Comment must be less than 1000 characters" });
+        }
       }
 
       // Check if booking exists and belongs to student

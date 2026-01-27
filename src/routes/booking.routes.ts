@@ -25,7 +25,7 @@ router.post(
         price,
       } = req.body;
 
-      // Validation
+      // Validation - required fields
       if (
         !tutorId ||
         !categoryId ||
@@ -40,16 +40,53 @@ router.post(
         });
       }
 
-      // Validate duration
-      if (duration <= 0 || duration > 480) {
+      // Validate string fields
+      if (typeof tutorId !== "string" || tutorId.trim() === "") {
+        return res.status(400).json({ error: "Valid tutorId is required" });
+      }
+      if (typeof categoryId !== "string" || categoryId.trim() === "") {
+        return res.status(400).json({ error: "Valid categoryId is required" });
+      }
+      if (typeof subject !== "string" || subject.trim() === "") {
+        return res.status(400).json({ error: "Subject cannot be empty" });
+      }
+      if (subject.length > 100) {
         return res
           .status(400)
-          .json({ error: "Duration must be between 1 and 480 minutes" });
+          .json({ error: "Subject must be less than 100 characters" });
+      }
+      if (notes && typeof notes === "string" && notes.length > 500) {
+        return res
+          .status(400)
+          .json({ error: "Notes must be less than 500 characters" });
+      }
+
+      // Validate sessionDate
+      const bookingDate = new Date(sessionDate);
+      if (isNaN(bookingDate.getTime())) {
+        return res.status(400).json({ error: "Invalid session date format" });
+      }
+      if (bookingDate < new Date()) {
+        return res
+          .status(400)
+          .json({ error: "Session date must be in the future" });
+      }
+
+      // Validate duration
+      if (!Number.isInteger(duration) || duration <= 0 || duration > 480) {
+        return res
+          .status(400)
+          .json({ error: "Duration must be an integer between 1 and 480 minutes" });
       }
 
       // Validate price
-      if (price <= 0) {
-        return res.status(400).json({ error: "Price must be greater than 0" });
+      if (typeof price !== "number" || price <= 0) {
+        return res.status(400).json({ error: "Price must be a positive number" });
+      }
+      if (price > 10000) {
+        return res
+          .status(400)
+          .json({ error: "Price cannot exceed 10000" });
       }
 
       // Check if tutor exists

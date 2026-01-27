@@ -134,17 +134,65 @@ router.put(
       const { bio, hourlyRate, subjects, qualifications, experience } =
         req.body;
 
-      // Validation
-      if (hourlyRate !== undefined && (hourlyRate < 0 || hourlyRate > 10000)) {
-        return res.status(400).json({
-          error: "Hourly rate must be between 0 and 10000",
-        });
+      // Validate bio
+      if (bio !== undefined) {
+        if (typeof bio !== "string") {
+          return res.status(400).json({ error: "Bio must be a string" });
+        }
+        if (bio.length > 2000) {
+          return res
+            .status(400)
+            .json({ error: "Bio must be less than 2000 characters" });
+        }
       }
 
-      if (experience !== undefined && (experience < 0 || experience > 100)) {
-        return res.status(400).json({
-          error: "Experience must be between 0 and 100 years",
-        });
+      // Validate hourlyRate
+      if (hourlyRate !== undefined) {
+        if (typeof hourlyRate !== "number" || hourlyRate < 0 || hourlyRate > 10000) {
+          return res.status(400).json({
+            error: "Hourly rate must be a number between 0 and 10000",
+          });
+        }
+      }
+
+      // Validate subjects
+      if (subjects !== undefined) {
+        if (!Array.isArray(subjects)) {
+          return res.status(400).json({ error: "Subjects must be an array" });
+        }
+        if (subjects.length > 20) {
+          return res
+            .status(400)
+            .json({ error: "Cannot add more than 20 subjects" });
+        }
+        if (subjects.some((s) => typeof s !== "string" || s.trim() === "")) {
+          return res
+            .status(400)
+            .json({ error: "Each subject must be a non-empty string" });
+        }
+      }
+
+      // Validate qualifications
+      if (qualifications !== undefined) {
+        if (typeof qualifications !== "string") {
+          return res
+            .status(400)
+            .json({ error: "Qualifications must be a string" });
+        }
+        if (qualifications.length > 1000) {
+          return res.status(400).json({
+            error: "Qualifications must be less than 1000 characters",
+          });
+        }
+      }
+
+      // Validate experience
+      if (experience !== undefined) {
+        if (!Number.isInteger(experience) || experience < 0 || experience > 100) {
+          return res.status(400).json({
+            error: "Experience must be an integer between 0 and 100 years",
+          });
+        }
       }
 
       // Get tutor profile

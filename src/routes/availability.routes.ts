@@ -49,17 +49,49 @@ router.post(
 
       const { dayOfWeek, startTime, endTime } = req.body;
 
-      // Validation
+      // Validation - required fields
       if (dayOfWeek === undefined || !startTime || !endTime) {
         return res.status(400).json({
           error: "dayOfWeek, startTime, and endTime are required",
         });
       }
 
-      if (dayOfWeek < 0 || dayOfWeek > 6) {
+      // Validate dayOfWeek
+      if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
         return res
           .status(400)
-          .json({ error: "dayOfWeek must be between 0 and 6" });
+          .json({ error: "dayOfWeek must be an integer between 0 (Sunday) and 6 (Saturday)" });
+      }
+
+      // Validate time format (HH:MM)
+      const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timeRegex.test(startTime)) {
+        return res
+          .status(400)
+          .json({ error: "startTime must be in HH:MM format (24-hour)" });
+      }
+      if (!timeRegex.test(endTime)) {
+        return res
+          .status(400)
+          .json({ error: "endTime must be in HH:MM format (24-hour)" });
+      }
+
+      // Validate time ordering
+      const start = new Date(`2000-01-01 ${startTime}`);
+      const end = new Date(`2000-01-01 ${endTime}`);
+      if (start >= end) {
+        return res
+          .status(400)
+          .json({ error: "endTime must be after startTime" });
+      }
+
+      // Validate slot duration (at least 30 minutes)
+      const durationMinutes =
+        (end.getTime() - start.getTime()) / (1000 * 60);
+      if (durationMinutes < 30) {
+        return res.status(400).json({
+          error: "Availability slot must be at least 30 minutes",
+        });
       }
 
       const tutorProfile = await prisma.tutorProfile.findUnique({

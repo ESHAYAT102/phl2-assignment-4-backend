@@ -43,13 +43,40 @@ router.post(
     try {
       const { name, description } = req.body;
 
+      // Validate required fields
       if (!name) {
-        return res.status(400).json({ error: "name is required" });
+        return res.status(400).json({ error: "Category name is required" });
+      }
+
+      // Validate name type and length
+      if (typeof name !== "string" || name.trim() === "") {
+        return res
+          .status(400)
+          .json({ error: "Category name must be a non-empty string" });
+      }
+      if (name.length > 50) {
+        return res
+          .status(400)
+          .json({ error: "Category name must be less than 50 characters" });
+      }
+
+      // Validate description if provided
+      if (description !== undefined) {
+        if (typeof description !== "string") {
+          return res
+            .status(400)
+            .json({ error: "Description must be a string" });
+        }
+        if (description.length > 500) {
+          return res.status(400).json({
+            error: "Description must be less than 500 characters",
+          });
+        }
       }
 
       // Check if category exists
       const existing = await prisma.category.findUnique({
-        where: { name },
+        where: { name: name.trim() },
       });
 
       if (existing) {
@@ -58,8 +85,8 @@ router.post(
 
       const category = await prisma.category.create({
         data: {
-          name,
-          description: description || null,
+          name: name.trim(),
+          description: description?.trim() || null,
         },
       });
 
@@ -84,6 +111,11 @@ router.put(
       const { id } = req.params;
       const { name, description } = req.body;
 
+      // Validate id
+      if (!id || typeof id !== "string") {
+        return res.status(400).json({ error: "Valid category ID is required" });
+      }
+
       // Check if category exists
       const category = await prisma.category.findUnique({
         where: { id },
@@ -93,25 +125,53 @@ router.put(
         return res.status(404).json({ error: "Category not found" });
       }
 
-      // Check if new name is unique
-      if (name && name !== category.name) {
-        const existing = await prisma.category.findUnique({
-          where: { name },
-        });
-
-        if (existing) {
+      // Validate and normalize name if provided
+      if (name !== undefined) {
+        if (typeof name !== "string" || name.trim() === "") {
           return res
             .status(400)
-            .json({ error: "Category name already exists" });
+            .json({ error: "Category name must be a non-empty string" });
+        }
+        if (name.length > 50) {
+          return res
+            .status(400)
+            .json({ error: "Category name must be less than 50 characters" });
+        }
+
+        // Check if new name is unique
+        if (name.trim() !== category.name) {
+          const existing = await prisma.category.findUnique({
+            where: { name: name.trim() },
+          });
+
+          if (existing) {
+            return res
+              .status(400)
+              .json({ error: "Category name already exists" });
+          }
+        }
+      }
+
+      // Validate description if provided
+      if (description !== undefined) {
+        if (typeof description !== "string") {
+          return res
+            .status(400)
+            .json({ error: "Description must be a string" });
+        }
+        if (description.length > 500) {
+          return res.status(400).json({
+            error: "Description must be less than 500 characters",
+          });
         }
       }
 
       const updated = await prisma.category.update({
         where: { id },
         data: {
-          name: name || category.name,
+          name: name ? name.trim() : category.name,
           description:
-            description !== undefined ? description : category.description,
+            description !== undefined ? description.trim() || null : category.description,
         },
       });
 
