@@ -1,6 +1,8 @@
-import { Router, Request, Response } from "express";
-import { prisma } from "../server";
-import { authMiddleware, requireRole, AuthRequest } from "../middleware/auth";
+import { Router } from "express";
+import type { Response } from "express";
+import { prisma } from "../config/database";
+import { authMiddleware, requireRole } from "../middleware/auth";
+import type { AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -74,11 +76,9 @@ router.post(
 
       // Validate duration
       if (!Number.isInteger(duration) || duration <= 0 || duration > 480) {
-        return res
-          .status(400)
-          .json({
-            error: "Duration must be an integer between 1 and 480 minutes",
-          });
+        return res.status(400).json({
+          error: "Duration must be an integer between 1 and 480 minutes",
+        });
       }
 
       // Validate price
@@ -110,7 +110,6 @@ router.post(
       }
 
       // Check if booking date is in the future
-      const bookingDate = new Date(sessionDate);
       if (bookingDate <= new Date()) {
         return res
           .status(400)
@@ -161,10 +160,20 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { status, page = "1", limit = "10" } = req.query;
+    const { status, page, limit } = req.query;
 
-    const pageNum = Math.max(1, parseInt(page as string) || 1);
-    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string) || 10));
+    const pageNum = Math.max(
+      1,
+      parseInt(String((Array.isArray(page) ? page[0] : page) || "1")) || 1,
+    );
+    const limitNum = Math.min(
+      50,
+      Math.max(
+        1,
+        parseInt(String((Array.isArray(limit) ? limit[0] : limit) || "10")) ||
+          10,
+      ),
+    );
     const skip = (pageNum - 1) * limitNum;
 
     const where: any = {};
@@ -187,11 +196,12 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     }
 
     // Filter by status
+    const statusValue = Array.isArray(status) ? status[0] : status;
     if (
-      status &&
-      ["CONFIRMED", "COMPLETED", "CANCELLED"].includes(status as string)
+      statusValue &&
+      ["CONFIRMED", "COMPLETED", "CANCELLED"].includes(statusValue as string)
     ) {
-      where.status = status;
+      where.status = statusValue;
     }
 
     const [bookings, total] = await Promise.all([
@@ -309,11 +319,13 @@ router.patch(
       }
 
       const { id } = req.params;
-      const { status } = req.body;
+      const statusValue = Array.isArray(req.body.status)
+        ? req.body.status[0]
+        : req.body.status;
 
       if (
-        !status ||
-        !["CONFIRMED", "COMPLETED", "CANCELLED"].includes(status)
+        !statusValue ||
+        !["CONFIRMED", "COMPLETED", "CANCELLED"].includes(statusValue)
       ) {
         return res.status(400).json({
           error: "status must be CONFIRMED, COMPLETED, or CANCELLED",
@@ -336,7 +348,7 @@ router.patch(
             .json({ error: "Not authorized to update this booking" });
         }
         // Students can only cancel
-        if (status !== "CANCELLED") {
+        if (statusValue !== "CANCELLED") {
           return res
             .status(403)
             .json({ error: "Students can only cancel bookings" });
@@ -352,7 +364,7 @@ router.patch(
             .json({ error: "Not authorized to update this booking" });
         }
         // Tutors can mark as completed or cancel
-        if (!["COMPLETED", "CANCELLED"].includes(status)) {
+        if (!["COMPLETED", "CANCELLED"].includes(statusValue)) {
           return res.status(403).json({
             error: "Tutors can only mark as completed or cancel",
           });
@@ -363,7 +375,7 @@ router.patch(
 
       const updated = await prisma.tutorBooking.update({
         where: { id },
-        data: { status },
+        data: { status: statusValue },
         include: {
           student: {
             select: {
@@ -423,11 +435,15 @@ router.delete(
           where: { userId: req.user.userId },
         });
 
-        if (tutorProfile?.id !== booking.tutorId && req.user.role !== "ADMIN") {
+        if (tutorProfile?.id !== booking.tutorId) {
           return res
             .status(403)
             .json({ error: "Not authorized to delete this booking" });
         }
+      } else if (req.user.role !== "ADMIN") {
+        return res
+          .status(403)
+          .json({ error: "Not authorized to delete this booking" });
       }
 
       await prisma.tutorBooking.update({

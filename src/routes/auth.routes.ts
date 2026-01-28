@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { prisma } from "../server";
+import { prisma } from "../config/database";
 import { hashPassword, comparePasswords, generateToken } from "../utils/auth";
 import { authMiddleware, AuthRequest } from "../middleware/auth";
 import { ResponseHelper } from "../utils/response";
@@ -94,6 +94,7 @@ router.post("/register", async (req: Request, res: Response) => {
       "User registered successfully",
     );
   } catch (error: any) {
+    console.error("Registration error:", error.message);
     ErrorLogger.log(error, "Register endpoint", ErrorSeverity.HIGH);
     if (ErrorLogger.isDatabaseError(error)) {
       return ResponseHelper.internalError(

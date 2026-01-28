@@ -1,19 +1,13 @@
 import express from "express";
 import type { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-
-// Load environment variables
-dotenv.config({ path: ".env.local" });
-dotenv.config({ path: ".env" });
-
-import { PrismaClient } from "@prisma/client";
+import { corsOptions } from "./config/cors";
+import { prisma, connectDatabase } from "./config/database";
 
 const app: Express = express();
-const prisma = new PrismaClient();
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -65,8 +59,7 @@ const PORT = process.env.PORT || 5000;
 async function main() {
   try {
     // Test database connection
-    await prisma.$connect();
-    console.log("✓ Database connected successfully");
+    await connectDatabase();
 
     app.listen(PORT, () => {
       console.log(`✓ Server running on http://localhost:${PORT}`);
