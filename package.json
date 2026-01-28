@@ -7,8 +7,9 @@
   "private": true,
   "scripts": {
     "dev": "bun run --watch src/server.ts",
-    "build": "bun build src/server.ts --outdir dist",
+    "build": "prisma generate && bun build src/server.ts --outdir dist",
     "start": "bun run src/server.ts",
+    "vercel-build": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "bun run prisma/seed.ts"
@@ -18,11 +19,14 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.10",
-    "@types/ws": "^8.18.1",
+    "@vercel/node": "^3.0.0",
     "prisma": "^7.3.0"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "engines": {
+    "node": "22.x"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
@@ -33,7 +37,6 @@
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "ws": "^8.19.0"
+    "jsonwebtoken": "^9.0.3"
   }
 }

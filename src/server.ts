@@ -53,31 +53,57 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
+// Initialize database connection for serverless
+let isConnected = false;
 
-async function main() {
-  try {
-    // Test database connection
-    await connectDatabase();
-
-    app.listen(PORT, () => {
-      console.log(`✓ Server running on http://localhost:${PORT}`);
-      console.log(`✓ API available at http://localhost:${PORT}/api`);
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
+async function initializeDatabase() {
+  if (!isConnected) {
+    try {
+      await connectDatabase();
+      isConnected = true;
+    } catch (error) {
+      console.error("Failed to connect to database:", error);
+      throw error;
+    }
   }
 }
 
-// Graceful shutdown
-process.on("SIGINT", async () => {
-  console.log("\nShutting down gracefully...");
-  await prisma.$disconnect();
-  process.exit(0);
+// Middleware to ensure database connection
+app.use(async (req, res, next) => {
+  try {
+    await initializeDatabase();
+    next();
+  } catch (error) {
+    res.status(500).json({ error: "Database connection failed" });
+  }
 });
 
-main();
+// Start server (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  
+  async function main() {
+    try {
+      await connectDatabase();
+      
+      app.listen(PORT, () => {
+        console.log(`✓ Server running on http://localhost:${PORT}`);
+        console.log(`✓ API available at http://localhost:${PORT}/api`);
+      });
+    } catch (error) {
+      console.error("Failed to start server:", error);
+      process.exit(1);
+    }
+  }
+
+  // Graceful shutdown
+  process.on("SIGINT", async () => {
+    console.log("\nShutting down gracefully...");
+    await prisma.$disconnect();
+    process.exit(0);
+  });
+
+  main();
+}
 
 export { app, prisma };

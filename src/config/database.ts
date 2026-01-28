@@ -1,12 +1,6 @@
-import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
-
-// Load environment variables
-dotenv.config({ path: ".env.local" });
-dotenv.config({ path: ".env" });
 
 // Create Prisma client
 const connectionString = process.env.DATABASE_URL;
@@ -16,15 +10,25 @@ if (!connectionString) {
 
 console.log("Database: Using DATABASE_URL:", connectionString.substring(0, 30) + "...");
 
-// Setup Neon configuration
-neonConfig.webSocketConstructor = ws;
+// Setup Neon configuration for serverless
+neonConfig.fetchConnectionCache = true;
 
 // Create Neon adapter with connection string
 const adapter = new PrismaNeon({ connectionString });
 
-export const prisma = new PrismaClient({
+// Global Prisma client for serverless
+declare global {
+  var __prisma: PrismaClient | undefined;
+}
+
+export const prisma = globalThis.__prisma || new PrismaClient({
   adapter,
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
 });
+
+if (process.env.NODE_ENV !== 'production') {
+  globalThis.__prisma = prisma;
+}
 
 // Test connection
 export async function connectDatabase() {
